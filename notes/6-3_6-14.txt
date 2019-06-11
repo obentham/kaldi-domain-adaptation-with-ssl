@@ -1,0 +1,21 @@
+6/3-6/7
+	mainly worked on lit review. Papers available on Mendeley.com
+
+--------------------------------------------------------------------------------
+
+Mon 6/10
+	Looked into controlling LM. Will stick with default for now (trained on WSJ)
+	Ran Kaldi through to WSJ tri4b
+
+Tue 6/11
+	Began s5_from_scratch/ to rewrite run.sh with full control over data
+	Running chain model from s5/ mainly as a test for time
+	Work on moving components over to s5_from_scratch/
+
+Wed 6/12
+
+
+Thu 6/13
+
+
+Fri 6/14
