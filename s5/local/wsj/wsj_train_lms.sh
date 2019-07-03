@@ -45,10 +45,10 @@ fi
 awk '{print $1}' $srcdir/lexicon.txt | grep -v -w '!SIL' > $dir/wordlist.txt
 
 # Get training data with OOV words (w.r.t. our current vocab) replaced with <UNK>.
-echo "Getting training data with OOV words replaced with <UNK> (train_nounk.gz)" 
+echo "Getting training data with OOV words replaced with <unk> (train_nounk.gz)" 
 gunzip -c $srcdir/cleaned.gz | awk -v w=$dir/wordlist.txt \
   'BEGIN{while((getline<w)>0) v[$1]=1;}
-  {for (i=1;i<=NF;i++) if ($i in v) printf $i" ";else printf "<UNK> ";print ""}'|sed 's/ $//g' \
+  {for (i=1;i<=NF;i++) if ($i in v) printf $i" ";else printf "<unk> ";print ""}'|sed 's/ $//g' \
   | gzip -c > $dir/train_nounk.gz
 
 # Get unigram counts (without bos/eos, but this doens't matter here, it's
@@ -61,7 +61,7 @@ gunzip -c $dir/train_nounk.gz | cat - $dir/wordlist.txt | \
  sort -nr > $dir/unigram.counts
 
 # Get "mapped" words-- a character encoding of the words that makes the common words very short.
-cat $dir/unigram.counts  | awk '{print $2}' | get_word_map.pl "<s>" "</s>" "<UNK>" > $dir/word_map
+cat $dir/unigram.counts  | awk '{print $2}' | get_word_map.pl "<s>" "</s>" "<unk>" > $dir/word_map
 
 gunzip -c $dir/train_nounk.gz | awk -v wmap=$dir/word_map 'BEGIN{while((getline<wmap)>0)map[$1]=$2;}
   { for(n=1;n<=NF;n++) { printf map[$n]; if(n<NF){ printf " "; } else { print ""; }}}' | gzip -c >$dir/train.gz

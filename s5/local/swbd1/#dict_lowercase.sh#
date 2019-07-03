@@ -1,0 +1,5 @@
+#!/bin/bash
+
+#
+# given a directory, lowercases all files in it
+#

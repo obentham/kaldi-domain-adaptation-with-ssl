@@ -10,13 +10,12 @@ if [ $# -le 3 ]; then
 fi
 
 
-dir=`pwd`/data/local/data
-lmdir=`pwd`/data/local/nist_lm
+dir=`pwd`/data/local/$wsj_data
+lmdir=`pwd`/data/local/$wsj_lm
 mkdir -p $dir $lmdir
 local=`pwd`/local
 utils=`pwd`/utils
 
-. ./path.sh # Needed for KALDI_ROOT
 sph2pipe=$KALDI_ROOT/tools/sph2pipe_v2.5/sph2pipe
 if [ ! -x $sph2pipe ]; then
   echo "Could not find (or execute) the sph2pipe program at $sph2pipe";
@@ -55,12 +54,12 @@ fi
 
 # This version for SI-84
 
-cat links/11-13.1/wsj0/doc/indices/train/tr_s_wv1.ndx | \
- $local/ndx2flist.pl $* | sort | \
- grep -v -i 11-2.1/wsj0/si_tr_s/401 > train_si84.flist
+#cat links/11-13.1/wsj0/doc/indices/train/tr_s_wv1.ndx | \
+# $local/ndx2flist.pl $* | sort | \
+# grep -v -i 11-2.1/wsj0/si_tr_s/401 > train_si84.flist
 
-nl=`cat train_si84.flist | wc -l`
-[ "$nl" -eq 7138 ] || echo "Warning: expected 7138 lines in train_si84.flist, got $nl"
+#nl=`cat train_si84.flist | wc -l`
+#[ "$nl" -eq 7138 ] || echo "Warning: expected 7138 lines in train_si84.flist, got $nl"
 
 # This version for SI-284
 cat links/13-34.1/wsj1/doc/indices/si_tr_s.ndx \
@@ -89,9 +88,11 @@ cat links/11-13.1/wsj0/doc/indices/test/nvp/si_et_20.ndx | \
   sort > test_eval92.flist
 
 # Nov'92 (330 utts, 5k vocab)
-cat links/11-13.1/wsj0/doc/indices/test/nvp/si_et_05.ndx | \
-  $local/ndx2flist.pl $* |  awk '{printf("%s.wv1\n", $1)}' | \
-  sort > test_eval92_5k.flist
+#cat links/11-13.1/wsj0/doc/indices/test/nvp/si_et_05.ndx | \
+#  $local/ndx2flist.pl $* |  awk '{printf("%s.wv1\n", $1)}' | \
+#  sort > test_eval92_5k.flist
+
+#echo "line 98"
 
 # Nov'93: (213 utts)
 # Have to replace a wrong disk-id.
@@ -100,17 +101,17 @@ cat links/13-32.1/wsj1/doc/indices/wsj1/eval/h1_p0.ndx | \
   $local/ndx2flist.pl $* | sort > test_eval93.flist
 
 # Nov'93: (213 utts, 5k)
-cat links/13-32.1/wsj1/doc/indices/wsj1/eval/h2_p0.ndx | \
-  sed s/13_32_1/13_33_1/ | \
-  $local/ndx2flist.pl $* | sort > test_eval93_5k.flist
+#cat links/13-32.1/wsj1/doc/indices/wsj1/eval/h2_p0.ndx | \
+#  sed s/13_32_1/13_33_1/ | \
+#  $local/ndx2flist.pl $* | sort > test_eval93_5k.flist
 
 # Dev-set for Nov'93 (503 utts)
 cat links/13-34.1/wsj1/doc/indices/h1_p0.ndx | \
   $local/ndx2flist.pl $* | sort > test_dev93.flist
 
 # Dev-set for Nov'93 (513 utts, 5k vocab)
-cat links/13-34.1/wsj1/doc/indices/h2_p0.ndx | \
-  $local/ndx2flist.pl $* | sort > test_dev93_5k.flist
+#cat links/13-34.1/wsj1/doc/indices/h2_p0.ndx | \
+#  $local/ndx2flist.pl $* | sort > test_dev93_5k.flist
 
 
 # Dev-set Hub 1,2 (503, 913 utterances)
@@ -118,15 +119,15 @@ cat links/13-34.1/wsj1/doc/indices/h2_p0.ndx | \
 # Note: the ???'s below match WSJ and SI_DT, or wsj and si_dt.
 # Sometimes this gets copied from the CD's with upcasing, don't know
 # why (could be older versions of the disks).
-find `readlink links/13-16.1`/???1/??_??_20 -print | grep -i ".wv1" | sort > dev_dt_20.flist
-find `readlink links/13-16.1`/???1/??_??_05 -print | grep -i ".wv1" | sort > dev_dt_05.flist
+#find `readlink links/13-16.1`/???1/??_??_20 -print | grep -i ".wv1" | sort > dev_dt_20.flist
+#find `readlink links/13-16.1`/???1/??_??_05 -print | grep -i ".wv1" | sort > dev_dt_05.flist
 
 
 # Finding the transcript files:
 for x in $*; do find -L $x -iname '*.dot'; done > dot_files.flist
 
 # Convert the transcripts into our format (no normalization yet)
-for x in train_si84 train_si284 test_eval92 test_eval93 test_dev93 test_eval92_5k test_eval93_5k test_dev93_5k dev_dt_05 dev_dt_20; do
+for x in train_si284 test_eval92 test_eval93 test_dev93; do
    $local/flist2scp.pl $x.flist | sort > ${x}_sph.scp
    cat ${x}_sph.scp | awk '{print $1}' | $local/find_transcripts.pl  dot_files.flist > $x.trans1
 done
@@ -135,24 +136,24 @@ done
 # that will be done inside the training scripts, as we'd like to make the
 # data-preparation stage independent of the specific lexicon used.
 noiseword="<NOISE>";
-for x in train_si84 train_si284 test_eval92 test_eval93 test_dev93 test_eval92_5k test_eval93_5k test_dev93_5k dev_dt_05 dev_dt_20; do
-   cat $x.trans1 | $local/normalize_transcript.pl $noiseword | sort > $x.txt || exit 1;
+for x in train_si284 test_eval92 test_eval93 test_dev93; do
+   cat $x.trans1 | $local/normalize_transcript.pl $noiseword | sort | awk '{print tolower($0)}' > $x.txt || exit 1;
 done
 
 # Create scp's with wav's. (the wv1 in the distribution is not really wav, it is sph.)
-for x in train_si84 train_si284 test_eval92 test_eval93 test_dev93 test_eval92_5k test_eval93_5k test_dev93_5k dev_dt_05 dev_dt_20; do
+for x in train_si284 test_eval92 test_eval93 test_dev93; do
   awk '{printf("%s '$sph2pipe' -f wav %s |\n", $1, $2);}' < ${x}_sph.scp > ${x}_wav.scp
 done
 
 # Make the utt2spk and spk2utt files.
-for x in train_si84 train_si284 test_eval92 test_eval93 test_dev93 test_eval92_5k test_eval93_5k test_dev93_5k dev_dt_05 dev_dt_20; do
+for x in train_si284 test_eval92 test_eval93 test_dev93; do
    cat ${x}_sph.scp | awk '{print $1}' | perl -ane 'chop; m:^...:; print "$_ $&\n";' > $x.utt2spk
    cat $x.utt2spk | $utils/utt2spk_to_spk2utt.pl > $x.spk2utt || exit 1;
 done
 
 
 #in case we want to limit lm's on most frequent words, copy lm training word frequency list
-cp links/13-32.1/wsj1/doc/lng_modl/vocab/wfl_64.lst $lmdir
+cat links/13-32.1/wsj1/doc/lng_modl/vocab/wfl_64.lst | awk '{print tolower($0)}' > $lmdir/wfl_64.lst
 chmod u+w $lmdir/*.lst # had weird permissions on source.
 
 # The 20K vocab, open-vocabulary language model (i.e. the one with UNK), without
@@ -163,20 +164,22 @@ chmod u+w $lmdir/lm_bg.arpa.gz
 
 # trigram would be:
 cat links/13-32.1/wsj1/doc/lng_modl/base_lm/tcb20onp.z | \
- perl -e 'while(<>){ if(m/^\\data\\/){ print; last;  } } while(<>){ print; }' | \
- gzip -c -f > $lmdir/lm_tg.arpa.gz || exit 1;
+    perl -e 'while(<>){ if(m/^\\data\\/){ print; last;  } } while(<>){ print; }' | \
+    #awk '{print tolower($0)}' | \
+    gzip -c -f > $lmdir/lm_tg.arpa.gz || exit 1;
 
 prune-lm --threshold=1e-7 $lmdir/lm_tg.arpa.gz $lmdir/lm_tgpr.arpa || exit 1;
 gzip -f $lmdir/lm_tgpr.arpa || exit 1;
 
 # repeat for 5k language models
-cp links/13-32.1/wsj1/doc/lng_modl/base_lm/bcb05onp.z  $lmdir/lm_bg_5k.arpa.gz || exit 1;
+cp links/13-32.1/wsj1/doc/lng_modl/base_lm/bcb05onp.z $lmdir/lm_bg_5k.arpa.gz || exit 1;
 chmod u+w $lmdir/lm_bg_5k.arpa.gz
 
 # trigram would be: !only closed vocabulary here!
 cp links/13-32.1/wsj1/doc/lng_modl/base_lm/tcb05cnp.z $lmdir/lm_tg_5k.arpa.gz || exit 1;
 chmod u+w $lmdir/lm_tg_5k.arpa.gz
 gunzip $lmdir/lm_tg_5k.arpa.gz
+
 tail -n 4328839 $lmdir/lm_tg_5k.arpa | gzip -c -f > $lmdir/lm_tg_5k.arpa.gz
 rm $lmdir/lm_tg_5k.arpa
 
@@ -211,4 +214,4 @@ cat links/11-13.1/wsj0/doc/spkrinfo.txt \
    awk '{print $1, $2}' | grep -v -- -- | sort | uniq > spk2gender
 
 
-echo "Data preparation succeeded"
+echo "wsj data preparation succeeded"

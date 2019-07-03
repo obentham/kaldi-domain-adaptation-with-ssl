@@ -34,7 +34,7 @@ dict_suffix=
 echo "$0 $@"  # Print the command line for logging
 . utils/parse_options.sh || exit 1;
 
-dir=data/local/dict${dict_suffix}
+dir=data/local/dict_wsj
 mkdir -p $dir
 
 
@@ -78,7 +78,7 @@ grep -v ';;;' $dir/cmudict/cmudict.0.7a | \
 # Add to cmudict the silences, noises etc.
 
 # the sort | uniq is to remove a duplicated pron from cmudict.
-(echo '!SIL SIL'; echo '<SPOKEN_NOISE> SPN'; echo '<UNK> SPN'; echo '<NOISE> NSN'; ) | \
+(echo '!SIL SIL'; echo '<SPOKEN_NOISE> SPN'; echo '<unk> SPN'; echo '<NOISE> NSN'; ) | \
  cat - $dir/lexicon1_raw_nosil.txt | sort | uniq > $dir/lexicon2_raw.txt || exit 1;
 
 

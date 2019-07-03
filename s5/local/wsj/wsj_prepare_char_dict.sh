@@ -2,7 +2,7 @@
 
 # Copyright 2017  Hossein Hadian
 
-phone_dir=data/local/dict_nosp
+phone_dir=data/local/dict
 dir=data/local/dict_char
 mkdir -p $dir
 
@@ -30,7 +30,7 @@ for l in sys.stdin:
 echo SIL > $dir/optional_silence.txt
 
 (echo '!SIL SIL'; echo '<SPOKEN_NOISE> SPN'; \
- echo '<UNK> SPN'; echo '<NOISE> NSN'; ) | \
+ echo '<unk> SPN'; echo '<NOISE> NSN'; ) | \
  cat - $dir/lexicon2_raw_nosil.txt | sort | uniq > $dir/lexicon.txt || exit 1;
 
 #  Get the set of non-silence phones

@@ -49,7 +49,7 @@ mincount=2 # Minimum count of an OOV we will try to generate a pron for.
 # words like FOO(1) which are alternate prons: our dict format won't
 # include these markers.
 grep -v ';;;' data/local/dict${dict_suffix}/cmudict/cmudict.0.7a |
- perl -ane 's/^(\S+)\(\d+\)/$1/; print; ' | sort | uniq > $dir/dict.cmu
+ perl -ane 's/^(\S+)\(\d+\)/$1/; print; ' | awk '{print tolower($0)}' | sort | uniq > $dir/dict.cmu
 
 cat $dir/dict.cmu | awk '{print $1}' | sort | uniq > $dir/wordlist.cmu
 
@@ -81,7 +81,7 @@ else
     }
     print "\n";
   }
- ' $dir/wordlist.cmu | gzip -c > $dir/cleaned.gz
+ ' $dir/wordlist.cmu | awk '{print tolower($0)}' | gzip -c > $dir/cleaned.gz
 fi
 
 # get unigram counts
@@ -173,11 +173,11 @@ echo "Count of OOVs we didn't handle due to low count is" \
     `awk -v thresh=$mincount '{if ($1 < thresh) x+=$1; } END{print x;}' $dir/oov.counts`
 # The two files created above are for humans to look at, as diagnostics.
 
-cat <<EOF | cat - $dir/dict.cmu $dir/dict.oovs_merged | sort | uniq > $dir/lexicon.txt
-!SIL SIL
-<SPOKEN_NOISE> SPN
-<UNK> SPN
-<NOISE> NSN
+cat <<EOF | cat - $dir/dict.cmu $dir/dict.oovs_merged | awk '{print tolower($0)}' | sort | uniq > $dir/lexicon.txt
+!sil sil
+<spoken_noise> spn
+<unk> spn
+<noise> nsn
 EOF
 
 echo "Created $dir/lexicon.txt"

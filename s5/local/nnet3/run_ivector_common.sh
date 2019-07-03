@@ -11,8 +11,8 @@ set -e -o pipefail
 stage=0
 nj=30
 train_set=train_si284   # you might set this to e.g. train.
-test_sets="test_dev93 test_eval92"
-gmm=tri4b                # This specifies a GMM-dir from the features of the type you're training the system on;
+test_sets="test_dev93 test_eval92 test_eval93 test_swbd"
+gmm=tri3b                # This specifies a GMM-dir from the features of the type you're training the system on;
                          # it should contain alignments for 'train_set'.
 
 num_threads_ubm=32

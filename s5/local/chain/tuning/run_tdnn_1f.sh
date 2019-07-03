@@ -31,8 +31,8 @@ set -e -o pipefail
 stage=0
 nj=30
 train_set=train_si284
-test_sets="test_dev93 test_eval92"
-gmm=tri4b        # this is the source gmm-dir that we'll use for alignments; it
+test_sets="test_dev93 test_eval92 test_eval93 test_swbd"
+gmm=tri3b        # this is the source gmm-dir that we'll use for alignments; it
                  # should have alignments for the specified training data.
 num_threads_ubm=32
 nnet3_affix=       # affix for exp dirs, e.g. it was _cleaned in tedlium.
@@ -81,8 +81,6 @@ local/nnet3/run_ivector_common.sh \
   --train-set $train_set --gmm $gmm \
   --num-threads-ubm $num_threads_ubm \
   --nnet3-affix "$nnet3_affix"
-
-
 
 gmm_dir=exp/${gmm}
 ali_dir=exp/${gmm}_ali_${train_set}_sp
@@ -225,8 +223,8 @@ if [ $stage -le 16 ]; then
     --trainer.max-param-change=2.0 \
     --trainer.num-epochs=4 \
     --trainer.frames-per-iter=3000000 \
-    --trainer.optimization.num-jobs-initial=2 \
-    --trainer.optimization.num-jobs-final=8 \
+    --trainer.optimization.num-jobs-initial=1 \
+    --trainer.optimization.num-jobs-final=1 \
     --trainer.optimization.initial-effective-lrate=0.0005 \
     --trainer.optimization.final-effective-lrate=0.00005 \
     --trainer.num-chunk-per-minibatch=256,128,64 \
@@ -255,17 +253,17 @@ if [ $stage -le 17 ]; then
   # lang directory, one that contained a wordlist and LM of your choice,
   # as long as phones.txt was compatible.
 
-  utils/lang/check_phones_compatible.sh \
-    data/lang_test_tgpr/phones.txt $lang/phones.txt
-  utils/mkgraph.sh \
-    --self-loop-scale 1.0 data/lang_test_tgpr \
-    $tree_dir $tree_dir/graph_tgpr || exit 1;
+#  utils/lang/check_phones_compatible.sh \
+#    data/lang_test_tgpr/phones.txt $lang/phones.txt
+#  utils/mkgraph.sh \
+#    --self-loop-scale 1.0 data/lang_test_tgpr \
+#    $tree_dir $tree_dir/graph_tgpr || exit 1;
 
   utils/lang/check_phones_compatible.sh \
-    data/lang_test_bd_tgpr/phones.txt $lang/phones.txt
+    data/lang_wsj_test_bd_fg/phones.txt $lang/phones.txt
   utils/mkgraph.sh \
-    --self-loop-scale 1.0 data/lang_test_bd_tgpr \
-    $tree_dir $tree_dir/graph_bd_tgpr || exit 1;
+    --self-loop-scale 1.0 data/lang_wsj_test_bd_fg \
+    $tree_dir $tree_dir/graph_wsj_test_bd_fg || exit 1;
 fi
 
 if [ $stage -le 18 ]; then
@@ -276,7 +274,7 @@ if [ $stage -le 18 ]; then
     (
       data_affix=$(echo $data | sed s/test_//)
       nspk=$(wc -l <data/${data}_hires/spk2utt)
-      for lmtype in tgpr bd_tgpr; do
+      for lmtype in wsj_test_bd_fg; do
         steps/nnet3/decode.sh \
           --acwt 1.0 --post-decode-acwt 10.0 \
           --extra-left-context 0 --extra-right-context 0 \
@@ -287,13 +285,13 @@ if [ $stage -le 18 ]; then
           --online-ivector-dir exp/nnet3${nnet3_affix}/ivectors_${data}_hires \
           $tree_dir/graph_${lmtype} data/${data}_hires ${dir}/decode_${lmtype}_${data_affix} || exit 1
       done
-      steps/lmrescore.sh \
-        --self-loop-scale 1.0 \
-        --cmd "$decode_cmd" data/lang_test_{tgpr,tg} \
-        data/${data}_hires ${dir}/decode_{tgpr,tg}_${data_affix} || exit 1
-      steps/lmrescore_const_arpa.sh --cmd "$decode_cmd" \
-        data/lang_test_bd_{tgpr,fgconst} \
-       data/${data}_hires ${dir}/decode_${lmtype}_${data_affix}{,_fg} || exit 1
+      #steps/lmrescore.sh \
+      #  --self-loop-scale 1.0 \
+      #  --cmd "$decode_cmd" data/lang_test_{tgpr,tg} \
+      #  data/${data}_hires ${dir}/decode_{tgpr,tg}_${data_affix} || exit 1
+      #steps/lmrescore_const_arpa.sh --cmd "$decode_cmd" \
+      #  data/lang_test_bd_{tgpr,fgconst} \
+      # data/${data}_hires ${dir}/decode_${lmtype}_${data_affix}{,_fg} || exit 1
     ) || touch $dir/.error &
   done
   wait
@@ -303,6 +301,8 @@ fi
 # Not testing the 'looped' decoding separately, because for
 # TDNN systems it would give exactly the same results as the
 # normal decoding.
+
+exit 0;
 
 if $test_online_decoding && [ $stage -le 19 ]; then
   # note: if the features change (e.g. you add pitch features), you will have to
