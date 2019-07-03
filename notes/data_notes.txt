@@ -1,17 +1,61 @@
 Kaldi
     wsj
         si84    	train
-
-        si284   	train
-
-        dev93   	test
-
-        eval92      test
-
-        eval93      test
-
+			7138	~15.3 hrs
+        si284   	train			<--
+			37416	~79 hrs
+        dev93   	test			<--
+			503
+        eval92      test			<--
+			333
+        eval93      test			<--
+			213
 	swbd1
-		
+		391593	~260 hrs			<--
+		reduced to 264151 utts
+
+	recipe datasets
+
+		lang
+
+		lang_test_bg
+		lang_test_bg_5k
+		lang_test_tg
+		lang_test_tg_5k
+		lang_test_tgpr
+		lang_test_tgpr_5k
+
+		lang_wsj_bd
+		lang_wsj_test_bd_fg
+		lang_wsj_test_bd_fgconst
+		lang_wsj_test_bd_fgpr
+		lang_wsj_test_bd_tg
+		lang_wsj_test_bd_tgconst
+		lang_wsj_test_bd_tgpr
+
+		local
+
+		swbd
+		ssl_swbd						316.273
+		test_swbd						2.62218
+
+		test_dev93						1.08661
+		test_eval92						0.705187
+		test_eval93						0.413266
+
+		train_si284						81.4858
+		train_si284_1k					2.10617
+		train_si284_2k					4.36733
+		train_si284_3k					6.42573
+		train_si284_4k					8.6146
+		train_si284_5k					10.7432
+		train_si284_10k					20.9112
+		train_si284_15k					32.8661
+		train_si284_20k					44.1204
+		train_si284_25k					55.1629
+		train_si284_30k					66.0641
+
+
 
 Corpora
     General Domain

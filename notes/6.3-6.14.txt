@@ -1,0 +1,37 @@
+6/3-6/7
+	mainly worked on lit review. Papers available on Mendeley.com
+
+--------------------------------------------------------------------------------
+
+Mon 6/10
+	Looked into controlling LM. Will stick with default for now (trained on WSJ)
+	Ran Kaldi through to WSJ tri4b
+
+Tue 6/11
+	Began s5_from_scratch/ to rewrite run.sh with full control over data
+	Running chain model from s5/ mainly as a test for time
+	Work on moving components over to s5_from_scratch/
+
+Wed 6/12
+	LM 		--> train from WSJ
+	dict	--> train from WSJ and SWBD (avoid OOV because it isn't interesting)
+
+	assumption for both of these is that they serve as a ground-truth (i.e. non-variable)
+
+Thu 6/13
+	TODO: 	featurize corpora (in s5_from_scratch/) --> feats.scp
+			set up pytorch-kaldi config file
+			during SSL, integrate batching with metric for candidate evaluation
+
+	be careful with upper/lower case in transcriptions
+		might be done --> all lower
+
+	useful kaldi scripts:
+		utils/subset_data_dir.sh
+		utils/data/remove_dup_utts.sh
+
+
+Fri 6/14
+	TODO:	be aware of relative sample rate and bit rate between wsj and swbd
+			standardize all <SPOKEN_NOISE> to <unk>
+			

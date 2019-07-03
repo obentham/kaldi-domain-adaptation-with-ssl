@@ -1,0 +1,61 @@
+TODO:	standardize all <SPOKEN_NOISE> to <unk>
+		be aware of relative sample rate and bit rate between wsj and swbd
+		featurize corpora (in s5_from_scratch/) --> feats.scp
+		set up pytorch-kaldi config file
+		during SSL, integrate batching with metric for candidate evaluation
+
+Mon 6/17
+	I think I fixed the error in lang and lm prep
+	successfully got to the end of stage 3
+
+Tue 6/18
+	successfully got to the end of stage 4
+
+	TODO:	confirm bit-rate and sample-rate
+			featurize data
+
+	audio info
+		wsj
+			sample rate		16k
+			precision		16 bit
+		swbd
+			sample rate		8k
+			precision		14 bit --> 16 bit via PCM
+
+		use 'sox <in-file> -r 16k <out-file>' on swbd to fix
+
+	may have fixed sample-rate issue. If error persists, reference:
+		~/mnt_larocca2/2018_kaldi/koeln_german/s5/data/train/wav.scp
+
+	wrote code to create subsets as well
+
+Wed 6/19
+	TODO:	fix sph2pipe | sox issue
+			featurize data
+
+	still working on sample-rate issue. Look at man sox for help
+
+	finished kaldi code, running now. Begin work on pytorch-kaldi
+
+Thu 6/20
+	TODO:	get a test set and ssl set out of swbd
+			clean up lang/lm/dict directories
+			run mono/tri/chain training in kaldi to get cmvn and fmllr feats
+			set up pytorch-kaldi config file
+
+	created test and ssl set from swbd
+
+	script ready to run, preprocessing finished, run using
+		nohup ./run.sh --stage 7 >> run.log
+
+Fri 6/21
+	TODO:	when Adam finishes MT training, run command above
+			use chain model to get alignments for all data
+			remove s5 and replace with s5_from_scratch
+			set up pytorch-kaldi config file
+
+	currently training up to tri3b since it doesn't need GPU
+	looking into utils/data/get_utt2dur.sh (tangential)
+
+	Began doing morphology project to implement attention seq2seq.
+	See local Documents/morphological-inflection-practice

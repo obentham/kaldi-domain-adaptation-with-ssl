@@ -1,0 +1,26 @@
+TODO:	decode all models on all sets to get baseline
+		remove s5 and replace with s5_from_scratch
+		set up pytorch-kaldi config file
+		begin SSL
+
+Mon 6/24
+	decoded everything except chain models, can't train those until tomorrow
+	morpho work is good, need to append <BOS> and <EOS>
+
+Tue 6/25
+	TODO:	decode all models on all sets to get baseline
+			remove s5 and replace with s5_from_scratch
+			set up pytorch-kaldi config file
+
+	need to add <unk> in morpho
+
+Wed 6/26
+	TODO:	fix run_tdnn and ivector scripts
+			decode all models on all sets to get baseline
+			remove s5 and replace with s5_from_scratch
+			set up pytorch-kaldi config file
+
+Thu 6/27
+
+
+Fri 6/28

@@ -1,0 +1,26 @@
+TODO:	set up pytorch-kaldi config file
+		begin SSL
+
+Mon 7/1
+
+
+Tue 7/2
+
+	Kaldi finally finished. results:
+
+	tri3b/decode_swbd/scoring_kaldi/best_wer:%WER                             64.66  [ 16563 / 25615, 842 ins, 5008 del, 10713 sub ]
+	tri3b/decode_swbd.si/scoring_kaldi/best_wer:%WER                          76.22  [ 19524 / 25615, 871 ins, 6351 del, 12302 sub ]
+	tri2b/decode_swbd/scoring_kaldi/best_wer:%WER                             77.02  [ 19729 / 25615, 956 ins, 6325 del, 12448 sub ]
+	chain/tdnn1f_sp/decode_wsj_test_bd_fg_swbd/scoring_kaldi/best_wer:%WER    80.51  [ 20622 / 25615, 744 ins, 7640 del, 12238 sub ]
+	tri1/decode_swbd/scoring_kaldi/best_wer:%WER                              81.96  [ 20994 / 25615, 957 ins, 5854 del, 14183 sub ]
+	mono/decode_swbd/scoring_kaldi/best_wer:%WER                              93.63  [ 23984 / 25615, 916 ins, 8242 del, 14826 sub ]
+
+
+Wed 7/3
+
+
+Thu 7/4
+
+	No work
+
+Fri 7/5
