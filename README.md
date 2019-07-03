@@ -16,4 +16,4 @@
 
 3. For each LM, train a Pytorch-Kaldi system on wsj, saving model at specific increments
 
-4.
+<img src="images/kaldi_ssl_da_hyp.png" alt="kaldi_ssl_da_hyp.png" width="70%"/>
