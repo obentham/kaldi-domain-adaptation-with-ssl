@@ -55,8 +55,6 @@ Kaldi
 		train_si284_25k					55.1629
 		train_si284_30k					66.0641
 
-
-
 Corpora
     General Domain
         WSJ
