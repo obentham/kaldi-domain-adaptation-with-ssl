@@ -29,7 +29,14 @@ export swbd=/home/data/ateam/switchboard
 export swbd_data=swbd_data
 export swbd_alignments=~/mnt_larocca2/data/swb_ms98_transcriptions
 
+# fish options
+
+export fish=/mnt/disk02/fisher_corpus
+
+export fish_data=fish_data
+export fish_lm=fish_lm
+
 # lang options
 
-export train_lang=lang_wsj_test_bd_fg
-export test_lang=lang_wsj_test_bd_fg
+export train_lang="wsj_lang_test_bd_fg"
+export test_lang="wsj_lang_test_bd_fg fish_lang_final"
