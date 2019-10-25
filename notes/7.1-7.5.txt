@@ -24,3 +24,7 @@ Thu 7/4
 	No work
 
 Fri 7/5
+	TODO:	setup fish_lm
+			make sure data/ is clean and everything works
+			set up pytorch-kaldi config file
+			begin SSL

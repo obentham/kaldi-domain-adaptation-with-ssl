@@ -1,0 +1,23 @@
+TODO:	setup fish_lm
+		make sure data/ is clean and everything works
+		set up pytorch-kaldi config file
+		begin SSL
+
+Mon 7/8
+	TODO:	create fish_lm	DONE
+			extend wsj_dict with fish_data
+			create fish_lang
+
+Tue 7/9
+	TODO:	extend wsj_dict with fish_data
+			create fish_lang
+
+Wed 7/10
+	TODO:	DOESN'T IMPROVE SCORE run kaldi, decoding with both wsj and swbd lm
+			redo part above using lmrescore.sh
+			look into adapting kaldi to do ssl rather than pytorch-kaldi
+
+Thu 7/11
+
+
+Fri 7/12

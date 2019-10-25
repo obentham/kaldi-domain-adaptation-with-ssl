@@ -1,0 +1,31 @@
+Mon 7/29
+
+	make sure ssl_swbd is featurized!
+
+	pseudo-label assigment occurs in local/chain/prepare_ssl_batch.sh
+
+	ssl occurs in local/chain/run_tdnn_ssl.sh
+
+	use ~/scripts/kaldi/egs/rm/s5/local/chain/tuning/run_tdnn_wsj_rm_1c.sh as a reference for ssl
+
+	when using steps/chain/train.py, set
+		--trainer.input-model
+		--trainer.num-epochs
+
+
+	consider
+	1. using half of ssl_swbd for a lm
+	2. using a scoring metric rather than random batching for ssl_swbd
+	3. applying perturbation to ssl data
+
+
+Tue 7/30
+
+
+Wed 7/31
+
+
+Thu 7/1
+
+
+Fri 7/2
