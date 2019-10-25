@@ -85,7 +85,7 @@ if [ $stage -le 4 ]; then
     # extend dictionary with fisher words
     
     # prepare base lang
-    utils/prepare_lang.sh data/local/fish_dict "<unk>" data/local/fish_lang data/fish_lang
+    utils/prepare_lang.sh data/local/wsj_dict "<unk>" data/local/fish_lang data/fish_lang
     # train lm on fisher transcripts
     local/fish/fisher_train_ssl_lms.sh
     # build fisher lang
@@ -110,7 +110,7 @@ fi
 if [ $stage -le 6 ]; then
     echo --------------------- stage 6: create subsets of train_si284 and swbd
     # 10 different sized subsets selected from 37,416 si284 utterances
-    for x in 1 2 3 4 5 10 15 20 25 30; do
+    for x in 2 3 4 5 10 15 20 25 30; do
 	utils/subset_data_dir.sh --first data/train_si284 ${x}000 data/train_si284_${x}k || exit 1;
     done
 
@@ -133,7 +133,7 @@ if [ $stage -le 7 ]; then
 	for data in eval92 eval93 dev93 swbd; do
 	    nspk=$(wc -l <data/test_${data}/spk2utt)
 	    steps/decode.sh --nj ${nspk} --cmd "$decode_cmd" exp/mono/graph_$test_lang \
-      		data/test_${data} exp/mono/decode/${test_lang}/${data}
+      		data/test_${data} exp/mono/decode-${test_lang}-${data}
 	done
     ) &
 fi
@@ -151,12 +151,13 @@ if [ $stage -le 8 ]; then
 
     (
 	for data in eval92 eval93 dev93 swbd; do
-	    steps/decode.sh --nj 8 --cmd "$decode_cmd" exp/tri1/graph_$test_lang \
-	        data/test_${data} exp/tri1/decode/${test_lang}/${data}
+	    nspk=$(wc -l <data/test_${data}/spk2utt)
+	    steps/decode.sh --nj ${nspk} --cmd "$decode_cmd" exp/tri1/graph_$test_lang \
+	        data/test_${data} exp/tri1/decode-${test_lang}-${data}
 
 	    steps/lmrescore.sh --cmd "$decode_cmd" data/$test_lang data/$rescore_lang \
-		data/test_${data} exp/tri1/decode/${test_lang}/${data} \
-		exp/tri1/decode/${rescore_lang}/${data} || exit 1;
+		data/test_${data} exp/tri1/decode-${test_lang}-${data} \
+		exp/tri1/decode-${rescore_lang}-${data} || exit 1;
 	done
     ) &
 fi
@@ -175,12 +176,13 @@ if [ $stage -le 9 ]; then
 
     (
 	for data in eval92 eval93 dev93 swbd; do
-	    steps/decode.sh --nj 8 --cmd "$decode_cmd" exp/tri2b/graph_$test_lang \
-       	        data/test_${data} exp/tri2b/decode/${test_lang}/${data}
+	    nspk=$(wc -l <data/test_${data}/spk2utt)
+	    steps/decode.sh --nj ${nspk} --cmd "$decode_cmd" exp/tri2b/graph_$test_lang \
+       	        data/test_${data} exp/tri2b/decode-${test_lang}-${data}
 
 	    steps/lmrescore.sh --cmd "$decode_cmd" data/$test_lang data/$rescore_lang \
-		data/test_${data} exp/tri2/decode/${test_lang}/${data} \
-		exp/tri2/decode/${rescore_lang}/${data} || exit 1;
+		data/test_${data} exp/tri2b/decode-${test_lang}-${data} \
+		exp/tri2b/decode-${rescore_lang}-${data} || exit 1;
 	done
     ) &
 fi
@@ -198,24 +200,58 @@ if [ $stage -le 10 ]; then
 
     (
 	for data in eval92 eval93 dev93 swbd; do
-	    steps/decode_fmllr.sh --nj 8 --cmd "$decode_cmd" exp/tri3b/graph_$test_lang \
-		data/test_${data} exp/tri3b/decode/${test_lang}/${data}
+	    nspk=$(wc -l <data/test_${data}/spk2utt)
+	    steps/decode_fmllr.sh --nj ${nspk} --cmd "$decode_cmd" exp/tri3b/graph_$test_lang \
+		data/test_${data} exp/tri3b/decode-${test_lang}-${data}
 
 	    steps/lmrescore.sh --cmd "$decode_cmd" data/$test_lang data/$rescore_lang \
-		data/test_${data} exp/tri3b/decode/${test_lang}/${data} \
-		exp/tri13b/decode/${rescore_lang}/${data} || exit 1;
+		data/test_${data} exp/tri3b/decode-${test_lang}-${data} \
+		exp/tri3b/decode-${rescore_lang}-${data} || exit 1;
 	done
     ) &
     cp -r data data_after_tri3b
     cp -r exp exp_after_tri3b
-    exit 0;
 fi
 
 if [ $stage -le 11 ]; then
-    echo --------------------- stage 11: chain model
+    echo --------------------- stage 11: prepare data for chain model ssl
 
     steps/align_fmllr.sh --nj 20 --cmd "$train_cmd" data/train_si284 \
-	data/$train_lang exp/tri3b exp/tri3b_ali || exit 1;
+        data/$train_lang exp/tri3b exp/tri3b_ali || exit 1;
 
-    local/chain/run_tdnn.sh
+    # divide ssl_swbd into 50 splits of roughly 5283 utts/split and 96 spkrs/split
+    utils/split_data.sh data/ssl_swbd 50
+
+    # rename swbd text to true_text to avoid confusion with ssl
+    for i in {1..50}; do
+	mv data/ssl_swbd/split50/$i/text data/ssl_swbd/split50/$i/text.0
+    done
+
+    # note: renaming above is not currently part of cp directories below
+    
+    cp -r data data_rdy_for_chain
+    cp -r exp exp_rdy_for_chain
+    
+    exit 0;
+fi
+
+if [ $stage -le 12 ]; then
+    echo --------------------- stage 12: run chain model before ssl
+    
+    for x in 30 25 20 15 10 5 4 3 2; do
+	local/chain/run_tdnn_pressl.sh --subset $x
+    done
+fi
+
+if [ $stage -le 13 ]; then
+    echo --------------------- stage 13: begin ssl continued training
+
+    for subset in 30; do
+	for batch in {1..30}; do
+	    
+	done
+    done
+    # when using different predictions for ssl_swbd splits
+    # use ln -s text.1 text to have text point to prediction text1
+
 fi

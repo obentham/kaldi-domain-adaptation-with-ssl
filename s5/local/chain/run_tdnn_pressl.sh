@@ -30,17 +30,17 @@ set -e -o pipefail
 # (some of which are also used in this script directly).
 stage=0
 nj=30
-train_set=train_si284
+
+subset=
+
 test_sets="test_dev93 test_eval92 test_eval93 test_swbd"
+
 gmm=tri3b        # this is the source gmm-dir that we'll use for alignments; it
                  # should have alignments for the specified training data.
 num_threads_ubm=32
-nnet3_affix=       # affix for exp dirs, e.g. it was _cleaned in tedlium.
 
 # Options which are not passed through to run_ivector_common.sh
 affix=1f   #affix for TDNN+LSTM directory e.g. "1a" or "1b", in case we change the configuration.
-common_egs_dir=
-reporting_email=
 
 # LSTM/chain options
 train_stage=-10
@@ -59,14 +59,17 @@ remove_egs=true
 #decode options
 test_online_decoding=false  # if true, it will run the last decoding stage.
 
-# End configuration section.
-echo "$0 $@"  # Print the command line for logging
-
-
+. ./config.sh
 . ./cmd.sh
 . ./path.sh
 . ./utils/parse_options.sh
 
+train_set=train_si284_${subset}k
+nnet3_affix=_$subset
+
+# End configuration section.
+echo "--------------------- running chain model for ${train_set}"
+echo "$0 $@"  # Print the command line for logging
 
 if ! cuda-compiled; then
   cat <<EOF && exit 1
@@ -76,18 +79,11 @@ where "nvcc" is installed.
 EOF
 fi
 
-local/nnet3/run_ivector_common.sh \
+local/nnet3/run_ivector_common_pressl.sh \
   --stage $stage --nj $nj \
   --train-set $train_set --gmm $gmm \
   --num-threads-ubm $num_threads_ubm \
   --nnet3-affix "$nnet3_affix"
-
-#local/nnet3/run_ivector_common.sh \
-#  --stage $stage --nj $nj \
-#  --train-set $train_set --gmm $gmm \
-#  --num-threads-ubm $num_threads_ubm \
-#  --nnet3-affix "$nnet3_affix"
-
 
 echo "finished local/nnet3/run_ivector_common.sh"
 
@@ -106,7 +102,7 @@ tree_dir=exp/chain${nnet3_affix}/tree_a_sp
 # the 'lang' directory is created by this script.
 # If you create such a directory with a non-standard topology
 # you should probably name it differently.
-lang=data/lang_chain
+lang=data/lang_chain${nnet3_affix}
 
 #removed $train_ivector_dir/ivector_online.scp \ from line below
 
@@ -143,7 +139,7 @@ if [ $stage -le 13 ]; then
   # Get the alignments as lattices (gives the chain training more freedom).
   # use the same num-jobs as the alignments
   steps/align_fmllr_lats.sh --nj 100 --cmd "$train_cmd" ${lores_train_data_dir} \
-    data/lang $gmm_dir $lat_dir
+    data/$train_lang $gmm_dir $lat_dir
   rm $lat_dir/fsts.*.gz # save space
 fi
 
@@ -270,10 +266,10 @@ if [ $stage -le 17 ]; then
 #    $tree_dir $tree_dir/graph_tgpr || exit 1;
 
   utils/lang/check_phones_compatible.sh \
-    data/lang_wsj_test_bd_fg/phones.txt $lang/phones.txt
+    data/$test_lang/phones.txt $lang/phones.txt
   utils/mkgraph.sh \
-    --self-loop-scale 1.0 data/lang_wsj_test_bd_fg \
-    $tree_dir $tree_dir/graph_wsj_test_bd_fg || exit 1;
+    --self-loop-scale 1.0 data/$test_lang \
+    $tree_dir $tree_dir/graph_$test_lang || exit 1;
 fi
 
 if [ $stage -le 18 ]; then
@@ -284,7 +280,7 @@ if [ $stage -le 18 ]; then
     (
       data_affix=$(echo $data | sed s/test_//)
       nspk=$(wc -l <data/${data}_hires/spk2utt)
-      for lmtype in wsj_test_bd_fg; do
+      for lmtype in $test_lang; do
         steps/nnet3/decode.sh \
           --acwt 1.0 --post-decode-acwt 10.0 \
           --extra-left-context 0 --extra-right-context 0 \
@@ -295,13 +291,14 @@ if [ $stage -le 18 ]; then
           --online-ivector-dir exp/nnet3${nnet3_affix}/ivectors_${data}_hires \
           $tree_dir/graph_${lmtype} data/${data}_hires ${dir}/decode_${lmtype}_${data_affix} || exit 1
       done
-      #steps/lmrescore.sh \
-      #  --self-loop-scale 1.0 \
-      #  --cmd "$decode_cmd" data/lang_test_{tgpr,tg} \
-      #  data/${data}_hires ${dir}/decode_{tgpr,tg}_${data_affix} || exit 1
-      #steps/lmrescore_const_arpa.sh --cmd "$decode_cmd" \
-      #  data/lang_test_bd_{tgpr,fgconst} \
-      # data/${data}_hires ${dir}/decode_${lmtype}_${data_affix}{,_fg} || exit 1
+      steps/lmrescore.sh \
+          --self-loop-scale 1.0 \
+          --cmd "$decode_cmd" data/$test_lang data/$rescore_lang \
+          data/${data}_hires ${dir}/decode_${test_lang}_${data_affix} \
+	  ${dir}/decode_${rescore_lang}_${data_affix} || exit 1
+#      steps/lmrescore_const_arpa.sh --cmd "$decode_cmd" \
+#	  data/$rescore_lang \
+#	  data/${data}_hires ${dir}/decode_${lmtype}_${data_affix} || exit 1
     ) || touch $dir/.error &
   done
   wait

@@ -1,0 +1,11 @@
+5.91 	 chain_30 	 wsj 	 eval92
+8.32 	 chain_30 	 fish 	 eval92
+
+7.03 	 chain_30 	 wsj 	 eval93
+10.12 	 chain_30 	 fish 	 eval93
+
+8.04 	 chain_30 	 wsj 	 dev93
+10.86 	 chain_30 	 fish 	 dev93
+
+82.06 	 chain_30 	 fish 	 swbd
+83.46 	 chain_30 	 wsj 	 swbd

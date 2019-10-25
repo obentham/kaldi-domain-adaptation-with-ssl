@@ -30,17 +30,17 @@ set -e -o pipefail
 # (some of which are also used in this script directly).
 stage=0
 nj=30
-train_set=train_si284
+
+subset=
+
 test_sets="test_dev93 test_eval92 test_eval93 test_swbd"
+
 gmm=tri3b        # this is the source gmm-dir that we'll use for alignments; it
                  # should have alignments for the specified training data.
 num_threads_ubm=32
-nnet3_affix=       # affix for exp dirs, e.g. it was _cleaned in tedlium.
 
 # Options which are not passed through to run_ivector_common.sh
 affix=1f   #affix for TDNN+LSTM directory e.g. "1a" or "1b", in case we change the configuration.
-common_egs_dir=
-reporting_email=
 
 # LSTM/chain options
 train_stage=-10
@@ -59,14 +59,16 @@ remove_egs=true
 #decode options
 test_online_decoding=false  # if true, it will run the last decoding stage.
 
-# End configuration section.
-echo "$0 $@"  # Print the command line for logging
-
-
 . ./cmd.sh
 . ./path.sh
 . ./utils/parse_options.sh
 
+train_set=train_si284_${subset}k
+nnet3_affix=$subset
+
+# End configuration section.
+echo "--------------------- running chain model for ${train_set}"
+echo "$0 $@"  # Print the command line for logging
 
 if ! cuda-compiled; then
   cat <<EOF && exit 1
@@ -81,13 +83,6 @@ local/nnet3/run_ivector_common.sh \
   --train-set $train_set --gmm $gmm \
   --num-threads-ubm $num_threads_ubm \
   --nnet3-affix "$nnet3_affix"
-
-#local/nnet3/run_ivector_common.sh \
-#  --stage $stage --nj $nj \
-#  --train-set $train_set --gmm $gmm \
-#  --num-threads-ubm $num_threads_ubm \
-#  --nnet3-affix "$nnet3_affix"
-
 
 echo "finished local/nnet3/run_ivector_common.sh"
 

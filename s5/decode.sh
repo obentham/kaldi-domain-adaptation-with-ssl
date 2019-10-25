@@ -1,12 +1,18 @@
+#!/bin/bash
+
 stage=0
 
 . ./cmd.sh
+. ./config.sh
+
+set -e
 
 if [ $stage -le 0 ]; then
     echo --------------------- stage 0: decode monophones
     for data in eval92 eval93 dev93 swbd; do
-	steps/decode.sh --nj 8 --cmd "$decode_cmd" exp/mono/graph \
-      	    data/test_${data} exp/mono/decode_${data}
+	nspk=$(wc -l <data/test_${data}/spk2utt)
+	steps/decode.sh --nj ${nspk} --cmd "$decode_cmd" exp/mono/graph_$test_lang \
+      	    data/test_${data} exp/mono/decode-${test_lang}-${data}
     done
 fi
 
@@ -14,26 +20,43 @@ fi
 if [ $stage -le 1 ]; then
     echo --------------------- stage 1: decode triphones tri1
     for data in eval92 eval93 dev93 swbd; do
-	steps/decode.sh --nj 8 --cmd "$decode_cmd" exp/tri1/graph \
-            data/test_${data} exp/tri1/decode_${data}
+	nspk=$(wc -l <data/test_${data}/spk2utt)
+	steps/decode.sh --nj ${nspk} --cmd "$decode_cmd" exp/tri1/graph_$test_lang \
+	    data/test_${data} exp/tri1/decode-${test_lang}-${data}
+
+	steps/lmrescore.sh --cmd "$decode_cmd" data/$test_lang data/$rescore_lang \
+	    data/test_${data} exp/tri1/decode-${test_lang}-${data} \
+	    exp/tri1/decode-${rescore_lang}-${data} || exit 1;
     done
 fi
 
 if [ $stage -le 2 ]; then
     echo --------------------- stage 2: decode triphones tri2b - LDA MLLT
     for data in eval92 eval93 dev93 swbd; do
-	steps/decode.sh --nj 8 --cmd "$decode_cmd" exp/tri2b/graph \
-       	    data/test_${data} exp/tri2b/decode_${data}
+	nspk=$(wc -l <data/test_${data}/spk2utt)
+	steps/decode.sh --nj ${nspk} --cmd "$decode_cmd" exp/tri2b/graph_$test_lang \
+            data/test_${data} exp/tri2b/decode-${test_lang}-${data}
+
+	steps/lmrescore.sh --cmd "$decode_cmd" data/$test_lang data/$rescore_lang \
+      	    data/test_${data} exp/tri2b/decode-${test_lang}-${data} \
+	    exp/tri2b/decode-${rescore_lang}-${data} || exit 1;
     done
 fi
 
 if [ $stage -le 3 ]; then
     echo --------------------- stage 3: decode triphones tri3b - LDA MLLT SAT
     for data in eval92 eval93 dev93 swbd; do
-	steps/decode_fmllr.sh --nj 8 --cmd "$decode_cmd" exp/tri3b/graph \
-       	    data/test_${data} exp/tri3b/decode_${data}
+	nspk=$(wc -l <data/test_${data}/spk2utt)
+	steps/decode_fmllr.sh --nj ${nspk} --cmd "$decode_cmd" exp/tri3b/graph_$test_lang \
+       	    data/test_${data} exp/tri3b/decode-${test_lang}-${data}
+
+	steps/lmrescore.sh --cmd "$decode_cmd" data/$test_lang data/$rescore_lang \
+       	    data/test_${data} exp/tri3b/decode-${test_lang}-${data} \
+	    exp/tri13b/decode-${rescore_lang}-${data} || exit 1;
     done
 fi
+
+exit 0;
 
 if [ $stage -le 4 ]; then
     echo --------------------- stage 4: decode triphones tri3b - LDA MLLT SAT

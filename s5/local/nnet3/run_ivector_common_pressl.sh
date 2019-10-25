@@ -21,6 +21,7 @@ nnet3_affix=             # affix for exp/nnet3 directory to put iVector stuff in
 
 . ./cmd.sh
 . ./path.sh
+. ./config.sh
 . utils/parse_options.sh
 
 

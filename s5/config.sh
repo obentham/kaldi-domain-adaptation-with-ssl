@@ -38,5 +38,6 @@ export fish_lm=fish_lm
 
 # lang options
 
-export train_lang="wsj_lang_test_bd_fg"
-export test_lang="wsj_lang_test_bd_fg fish_lang_final"
+export train_lang=wsj_lang_test_bd_fg
+export test_lang=wsj_lang_test_bd_fg
+export rescore_lang=fish_lang_final
