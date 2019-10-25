@@ -13,8 +13,6 @@
 # in data/local/) because it's just the first 7138 utterances in train_si284.
 # We'll create train_si84 after doing the feature extraction.
 
-lang_suffix=
-
 echo "$0 $@"  # Print the command line for logging
 . utils/parse_options.sh || exit 1;
 
@@ -23,9 +21,7 @@ echo "$0 $@"  # Print the command line for logging
 echo "Preparing train and test data"
 srcdir=data/local/wsj_data
 lmdir=data/local/wsj_lm
-tmpdir=data/local/lm_tmp
-lexicon=data/local/lang${lang_suffix}_tmp/lexiconp.txt
-mkdir -p $tmpdir
+lexicon=data/local/wsj_lang_tmp/lexiconp.txt
 
 for x in train_si284 test_eval92 test_eval93 test_dev93; do
   mkdir -p data/$x
@@ -43,12 +39,13 @@ done
 echo Preparing language models for test
 
 for lm_suffix in bg tgpr tg bg_5k tgpr_5k tg_5k; do
-  test=data/lang${lang_suffix}_test_${lm_suffix}
+#for lm_suffix in tgpr; do
+  test=data/wsj_lang_${lm_suffix}
 
   echo test: $test
   
   mkdir -p $test
-  cp -r data/lang${lang_suffix}/* $test || exit 1;
+  cp -r data/local/wsj_lang/* $test || exit 1;
 
   echo arpa.gz file: $lmdir/lm_${lm_suffix}.arpa.gz
   
@@ -60,4 +57,3 @@ for lm_suffix in bg tgpr tg bg_5k tgpr_5k tg_5k; do
 done
 
 echo "Succeeded in formatting data."
-rm -r $tmpdir
